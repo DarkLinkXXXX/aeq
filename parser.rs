@@ -14,7 +14,7 @@ pub mod parser {
                 Operator(Div)           => println("Div"),
                 Parenthese(Open)        => println("Parenthese Open"),
                 Parenthese(Close)       => println("Parenthese Close"),
-                _                       => println("Unknown")
+                Unknown(c)              => println!("Unknown({})", c)
             }
         }
     }
@@ -23,7 +23,7 @@ pub mod parser {
         Constant(Constants),
         Operator(Operators),
         Parenthese(Parentheses),
-        Unknown
+        Unknown(char)
     }
 
     pub enum Constants {
@@ -38,58 +38,69 @@ pub mod parser {
         Open, Close
     }
 
-    pub fn each(t: &[Token], op: &fn(t: &Token)) {
-        let mut n = 0;
-        while n < t.len() {
-            op(&t[n]);
-            n += 1;
+    pub mod tokenizer {
+
+        use super::Token;
+
+        pub fn each(t: &[Token], op: &fn(t: &Token)) {
+            let mut n = 0u;
+            while n < t.len() {
+                op(&t[n]);
+                n += 1;
+            }
         }
+
+        pub fn iter(s: ~str, op: &fn(c: char, next: &mut uint, s: &str)) {
+            use std::str::*;
+            let mut i = 0u;
+            while i < s.len() {
+                let ch = s.char_range_at(i).ch;
+                let mut next = s.char_range_at(i).next;
+                op(ch, &mut next, s);
+                i = next
+            }
+        }
+
     }
 
-    // TODO Make more readable
-
     pub fn tokenizer(expr: ~str) -> ~[Token] {
-        use std::char::from_u32;
         use std::char::is_digit;
         use std::from_str::from_str;
 
         let mut tokens: ~[Token] = ~[];
         
-        let mut n = 0; 
-        while n < expr.len() {
-            let c = match from_u32(expr[n] as u32) {
-                Some(cc) => cc,
-                None     => return ~[]
-            };
-            match c {
-                '+' => tokens.push(Token{ id: Operator(Add) }),
-                '-' => tokens.push(Token{ id: Operator(Sub) }),
-                '*' => tokens.push(Token{ id: Operator(Mul) }),
-                '/' => tokens.push(Token{ id: Operator(Div) }),
-                '(' => tokens.push(Token{ id: Parenthese(Open) }),
-                ')' => tokens.push(Token{ id: Parenthese(Close) }),
-                d   if is_digit(d) => {
-                    let begin = n;
-                    while n < expr.len()  {
-                        let cc = match from_u32(expr[n] as u32) {
-                            Some(ccc) => ccc,
-                            None     => return ~[]
-                        };
-                        if !is_digit(cc) && cc != '.' {
-                            break;
-                        } 
-                        n += 1;
+        do tokenizer::iter(expr) |ch, next, expr| {
+            let token = match ch {
+                '+' => Token{ id: Operator(Add) },
+                '-' => Token{ id: Operator(Sub) },
+                '*' => Token{ id: Operator(Mul) },
+                '/' => Token{ id: Operator(Div) },
+                '(' => Token{ id: Parenthese(Open) },
+                ')' => Token{ id: Parenthese(Close) },
+                d if is_digit(d) => {
+                    let mut substr = ~"";
+                    substr.push_char(d);
+                    loop {
+                        if *next >= expr.len() {
+                            break
+                        }
+                        let ch = expr.char_range_at(*next).ch;
+                        if is_digit(ch) || ch == '.' {
+                            substr.push_char(ch)
+                        } else {
+                            break
+                        }
+                        *next = expr.char_range_at(*next).next;
                     }
-                    let number = match from_str::<f64>(expr.slice(begin, n)) {
-                        Some(n) => n,
-                        None    => 0f64
+                    let n = match from_str::<f64>(substr) {
+                        Some(val) => val,
+                        None => -1f64
                     };
-                    tokens.push(Token{ id: Constant(Number(number)) });
-                    n -= 1;
+                    Token{ id: Constant(Number(n)) }
                 }
-                  _ => tokens.push(Token{ id: Unknown })
-            }
-            n += 1;
+                _ => Token{ id: Unknown(ch) }
+            }; 
+            tokens.push(token);
         }
         tokens
     }
