@@ -10,7 +10,7 @@ pub mod token {
     pub enum Tokens {
         Constant(Constants),
         Operator(Operators),
-        Parenthese(Parentheses),
+        Parenthesis(Parentheses),
         Unknown(char)
     }
 
@@ -30,6 +30,8 @@ pub mod token {
 
         let mut tokens: ~[Token] = ~[];
         
+        //  Iterate through every character in the text.
+        //  Check if the character is a token or could indicate some token.
         do iter(text) |ch, next| {
 
             let token = match ch {
@@ -37,8 +39,8 @@ pub mod token {
                 '-' => { Token{ id: Operator(Sub) } }
                 '*' => { Token{ id: Operator(Mul) } }
                 '/' => { Token{ id: Operator(Div) } }
-                '(' => { Token{ id: Parenthese(Open) } }
-                ')' => { Token{ id: Parenthese(Close) } }
+                '(' => { Token{ id: Parenthesis(Open) } }
+                ')' => { Token{ id: Parenthesis(Close) } }
 
                 d if is_digit(d) => {
                     match token_number(d, next, text) {
@@ -58,10 +60,14 @@ pub mod token {
 
     fn token_number(ch: char, next: &mut uint, text: &str) -> Option<Token> {
 
-        let mut substr = ~"";
+        let mut number = ~"";
 
-        substr.push_char(ch);
+        // push the first given character ch e.g. 7.88 -> '7' would be ch
+        // into our number string
+        number.push_char(ch);
 
+        // Iterate through the text until we hit the end of the number.
+        // So we pushed every character of the number into the number string.
         loop {
             if *next >= text.len() {
                 break
@@ -70,7 +76,7 @@ pub mod token {
             let ch = text.char_range_at(*next).ch;
 
             if is_digit(ch) || ch == '.' {
-                substr.push_char(ch)
+                number.push_char(ch)
             } else {
                 break
             }
@@ -78,7 +84,8 @@ pub mod token {
             *next = text.char_range_at(*next).next;
         }
 
-        let n = match from_str::<f64>(substr) {
+        // convert the number string into a real number
+        let n = match from_str::<f64>(number) {
             Some(n) => n,
             None    => return None
         };
@@ -90,6 +97,8 @@ pub mod token {
 
         let mut n = 0u;
 
+        // Iterate through every character of the text an issue
+        // the given closure on it.
         while n < text.len() {
             let ch = text.char_range_at(n).ch;
             let mut next = text.char_range_at(n).next;
@@ -103,6 +112,7 @@ pub mod token {
 
         let mut n = 0u;
 
+        // Iterate through every token and issue the given closure on it.
         while n < t.len() {
             op(&t[n]);
             n += 1;
