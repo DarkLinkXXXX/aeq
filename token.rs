@@ -3,10 +3,12 @@ pub mod token {
     use std::char::is_digit;
     use std::from_str::from_str;
 
+    #[deriving(Eq)]
     pub struct Token {
         id: Tokens
     }
 
+    #[deriving(Eq)]
     pub enum Tokens {
         Constant(Constants),
         Operator(Operators),
@@ -14,14 +16,17 @@ pub mod token {
         Unknown(char)
     }
 
+    #[deriving(Eq)]
     pub enum Constants {
         Number(f64)
     }
 
+    #[deriving(Eq)]
     pub enum Operators {
         Add, Sub, Mul, Div
     }
 
+    #[deriving(Eq)]
     pub enum Parentheses {
         Open, Close
     }
@@ -126,5 +131,41 @@ pub mod token {
             op(&t[n]);
             n += 1;
         }
+    }
+    
+    // Unit tests to check if our function do want we want them to do
+
+    #[test]
+    fn test_tokenizer() {
+        
+        // Check for diffrent expressions
+        let expr = "(3.3/5.5)";
+        let tokens = ~[ Token{ id: Parenthesis(Open) }, Token{ id: Constant(Number(3.3f64)) }, Token{ id: Operator(Div) }, Token{ id: Constant(Number(5.5f64)) }, Token{ id: Parenthesis(Close) }]; 
+        if tokenizer(expr) != tokens {
+            fail!(format!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)) 
+        }
+
+        let expr = "(3+3)*3";
+        let tokens = ~[ Token{ id: Parenthesis(Open) }, Token{ id: Constant(Number(3f64)) }, Token{ id: Operator(Add) }, Token{ id: Constant(Number(3f64)) }, Token{ id: Parenthesis(Close) }
+        , Token{ id: Operator(Mul) }, Token{ id: Constant(Number(3f64)) }];
+        if tokenizer(expr) != tokens {
+            fail!(format!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)) 
+        }
+    }
+
+    #[test]
+    fn test_token_number() {
+        let number = "7.88";        
+        match token_number(number.char_range_at(0).ch, &mut number.char_range_at(0).next, number) {
+            Some(t) => { if t == Token{ id: Constant(Number(7.88f64)) } { return } }
+            None    => ()
+        }
+
+        let number = "7";        
+        match token_number(number.char_range_at(0).ch, &mut number.char_range_at(0).next, number) {
+            Some(t) => { if t == Token{ id: Constant(Number(7f64)) } { return } }
+            None    => ()
+        }
+        fail!(format!("test: token.rs in test_token_number: couldn't token_number \"{}\"", number))
     }
 }
