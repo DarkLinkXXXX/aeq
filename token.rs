@@ -26,7 +26,7 @@ pub mod token {
         Open, Close
     }
 
-    pub fn tokenizer(text: ~str) -> ~[Token] {
+    pub fn tokenizer(text: &str) -> ~[Token] {
 
         let mut tokens: ~[Token] = ~[];
         
