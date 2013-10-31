@@ -45,11 +45,17 @@ pub mod token {
                 d if is_digit(d) => {
                     match token_number(d, next, text) {
                         Some(t) => { t }
-                        None    => { Token{ id: Unknown(ch) } }
+                        None    => {
+                            warn!("warning: token.rs in tokenizer: couldn't match token_number!");
+                            Token{ id: Unknown(ch) } 
+                        }
                     }
                 }
 
-                _   => { Token{ id: Unknown(ch) } }
+                _   => {
+                    info!(format!("info: token.rs in tokenizer: {} is a unknown character.", ch));
+                    Token{ id: Unknown(ch) } 
+                }
             }; 
 
             tokens.push(token);
@@ -87,7 +93,10 @@ pub mod token {
         // convert the number string into a real number
         let n = match from_str::<f64>(number) {
             Some(n) => n,
-            None    => return None
+            None    => {
+                warn!(format!("warning: token.rs in token_number: couldn't convert {} into a floating point number!", number));
+                return None
+            }
         };
 
         return Some(Token{ id: Constant(Number(n)) });
