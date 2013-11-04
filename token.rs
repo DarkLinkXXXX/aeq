@@ -2,31 +2,15 @@ use std::char::is_digit;
 use std::from_str::from_str;
 
 #[deriving(Eq)]
-pub struct Token {
-	id: Tokens
-}
+pub struct Token(Tokens);
 
 #[deriving(Eq)]
 pub enum Tokens {
-	Constant(Constants),
-	Operator(Operators),
-	Parenthesis(Parentheses),
+	Add, Sub, Mul, Div,
+	Number(f64),
+	OpenParentheses,
+	CloseParentheses,
 	Unknown(char)
-}
-
-#[deriving(Eq)]
-pub enum Constants {
-	Number(f64)
-}
-
-#[deriving(Eq)]
-pub enum Operators {
-	Add, Sub, Mul, Div
-}
-
-#[deriving(Eq)]
-pub enum Parentheses {
-	Open, Close
 }
 
 pub fn tokenizer(text: &str) -> ~[Token] {
@@ -38,26 +22,26 @@ pub fn tokenizer(text: &str) -> ~[Token] {
 	do iter(text) |ch, next| {
 
 		let token = match ch {
-			'+' => { Token{ id: Operator(Add) } }
-			'-' => { Token{ id: Operator(Sub) } }
-			'*' => { Token{ id: Operator(Mul) } }
-			'/' => { Token{ id: Operator(Div) } }
-			'(' => { Token{ id: Parenthesis(Open) } }
-			')' => { Token{ id: Parenthesis(Close) } }
+			'+' => { Token(Add) }
+			'-' => { Token(Sub) }
+			'*' => { Token(Mul) }
+			'/' => { Token(Div) }
+			'(' => { Token(OpenParentheses) }
+			')' => { Token(CloseParentheses) }
 
 			d if is_digit(d) => {
 				match token_number(d, next, text) {
 					Some(t) => { t }
 					None    => {
 						warn!("warning: token.rs in tokenizer: couldn't match token_number!");
-						Token{ id: Unknown(ch) } 
+						Token(Unknown(ch))
 					}
 				}
 			}
 
 			_   => {
 				info!(format!("info: token.rs in tokenizer: {} is a unknown character.", ch));
-				Token{ id: Unknown(ch) } 
+				Token(Unknown(ch))
 			}
 		}; 
 
@@ -102,7 +86,7 @@ fn token_number(ch: char, next: &mut uint, text: &str) -> Option<Token> {
 		}
 	};
 
-	return Some(Token{ id: Constant(Number(n)) });
+	return Some(Token(Number(n)));
 }
 
 fn iter(text: &str, op: &fn(c: char, next: &mut uint)) {
@@ -138,14 +122,14 @@ fn test_tokenizer() {
 
 	// Check for diffrent expressions
 	let expr = "(3.3/5.5)";
-	let tokens = ~[ Token{ id: Parenthesis(Open) }, Token{ id: Constant(Number(3.3f64)) }, Token{ id: Operator(Div) }, Token{ id: Constant(Number(5.5f64)) }, Token{ id: Parenthesis(Close) }]; 
+	let tokens = ~[ Token(OpenParentheses), Token(Number(3.3f64)), Token(Div), Token(Number(5.5f64)), Token(CloseParentheses)];
 	if tokenizer(expr) != tokens {
 		fail!(format!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)) 
 	}
 
 	let expr = "(3+3)*3";
-	let tokens = ~[ Token{ id: Parenthesis(Open) }, Token{ id: Constant(Number(3f64)) }, Token{ id: Operator(Add) }, Token{ id: Constant(Number(3f64)) }, Token{ id: Parenthesis(Close) }
-	, Token{ id: Operator(Mul) }, Token{ id: Constant(Number(3f64)) }];
+	let tokens = ~[ Token(OpenParentheses), Token(Number(3f64)), Token(Add), Token(Number(3f64)), Token(CloseParentheses),
+	Token(Mul), Token(Number(3f64))];
 	if tokenizer(expr) != tokens {
 		fail!(format!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)) 
 	}
@@ -155,13 +139,13 @@ fn test_tokenizer() {
 fn test_token_number() {
 	let number = "7.88";
 	match token_number(number.char_range_at(0).ch, &mut number.char_range_at(0).next, number) {
-		Some(t) => { if t == Token{ id: Constant(Number(7.88f64)) } { return } }
+		Some(t) => { if t == Token(Number(7.88f64)) { return } }
 		None    => ()
 	}
 
 	let number = "7";
 	match token_number(number.char_range_at(0).ch, &mut number.char_range_at(0).next, number) {
-		Some(t) => { if t == Token{ id: Constant(Number(7f64)) } { return } }
+		Some(t) => { if t == Token(Number(7f64)) { return } }
 		None    => ()
 	}
 	fail!(format!("test: token.rs in test_token_number: couldn't token_number \"{}\"", number))
