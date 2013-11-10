@@ -40,7 +40,7 @@ pub fn tokenizer(text: &str) -> ~[Token] {
 			}
 
 			_   => {
-				info!(format!("info: token.rs in tokenizer: {} is a unknown character.", ch));
+				info!("info: token.rs in tokenizer: {} is a unknown character.", ch);
 				Token(Unknown(ch))
 			}
 		}; 
@@ -81,7 +81,7 @@ fn token_number(ch: char, next: &mut uint, text: &str) -> Option<Token> {
 	let n = match from_str::<f64>(number) {
 		Some(n) => n,
 		None    => {
-			warn!(format!("warning: token.rs in token_number: couldn't convert {} into a floating point number!", number));
+			warn!("warning: token.rs in token_number: couldn't convert {} into a floating point number!", number);
 			return None
 		}
 	};
@@ -124,14 +124,14 @@ fn test_tokenizer() {
 	let expr = "(3.3/5.5)";
 	let tokens = ~[ Token(OpenParentheses), Token(Number(3.3f64)), Token(Div), Token(Number(5.5f64)), Token(CloseParentheses)];
 	if tokenizer(expr) != tokens {
-		fail!(format!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)) 
+		fail!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", exp)
 	}
 
 	let expr = "(3+3)*3";
 	let tokens = ~[ Token(OpenParentheses), Token(Number(3f64)), Token(Add), Token(Number(3f64)), Token(CloseParentheses),
 	Token(Mul), Token(Number(3f64))];
 	if tokenizer(expr) != tokens {
-		fail!(format!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)) 
+		fail!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)
 	}
 }
 
@@ -148,5 +148,5 @@ fn test_token_number() {
 		Some(t) => { if t == Token(Number(7f64)) { return } }
 		None    => ()
 	}
-	fail!(format!("test: token.rs in test_token_number: couldn't token_number \"{}\"", number))
+	fail!("test: token.rs in test_token_number: couldn't token_number \"{}\"", number)
 }
