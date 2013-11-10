@@ -124,7 +124,7 @@ fn test_tokenizer() {
 	let expr = "(3.3/5.5)";
 	let tokens = ~[ Token(OpenParentheses), Token(Number(3.3f64)), Token(Div), Token(Number(5.5f64)), Token(CloseParentheses)];
 	if tokenizer(expr) != tokens {
-		fail!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", exp)
+		fail!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)
 	}
 
 	let expr = "(3+3)*3";
