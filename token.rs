@@ -2,15 +2,16 @@ use std::char::is_digit;
 use std::from_str::from_str;
 use std::fmt;
 
-#[deriving(Eq)]
+#[deriving(Eq, Clone)]
 pub struct Token(Tokens);
 
-#[deriving(Eq)]
+#[deriving(Eq, Clone)]
 pub enum Tokens {
 	Add, Sub, Mul, Div,
 	Number(f64),
 	OpenParentheses,
 	CloseParentheses,
+	EOF,
 	Unknown(char)
 }
 
@@ -21,12 +22,33 @@ impl fmt::Default for Token {
 			Number(x) => format!("{}", x),
 			OpenParentheses => ~"(",
 			CloseParentheses => ~")",
+			EOF => ~"EOF",
 			Unknown(x) => format!("{}", x)
 		};
 
 		write!(f.buf, "{}", txt)
 	}
 }
+
+impl Token {
+
+	pub fn precedence(&self) -> uint {
+		match **self {
+			Add => 1, Sub => 1,
+			Mul => 2, Div => 1,
+			_ => 0
+		}
+	}
+
+	pub fn is_operator(&self) -> bool {
+		match **self {
+			Add => true, Sub => true,
+			Mul => true, Div => true,
+			_ => false
+		}
+	}
+}
+
 
 pub fn tokenizer(text: &str) -> ~[Token] {
 
@@ -62,6 +84,8 @@ pub fn tokenizer(text: &str) -> ~[Token] {
 
 		tokens.push(token);
 	}
+
+	tokens.push(Token(EOF));
 
 	return tokens;
 }
@@ -137,14 +161,14 @@ fn test_tokenizer() {
 
 	// Check for diffrent expressions
 	let expr = "(3.3/5.5)";
-	let tokens = ~[ Token(OpenParentheses), Token(Number(3.3f64)), Token(Div), Token(Number(5.5f64)), Token(CloseParentheses)];
+	let tokens = ~[ Token(OpenParentheses), Token(Number(3.3f64)), Token(Div), Token(Number(5.5f64)), Token(CloseParentheses), Token(EOF)];
 	if tokenizer(expr) != tokens {
 		fail!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)
 	}
 
 	let expr = "(3+3)*3";
 	let tokens = ~[ Token(OpenParentheses), Token(Number(3f64)), Token(Add), Token(Number(3f64)), Token(CloseParentheses),
-	Token(Mul), Token(Number(3f64))];
+	Token(Mul), Token(Number(3f64)), Token(EOF)];
 	if tokenizer(expr) != tokens {
 		fail!("test: token.rs in test_tokenizer: couldn't tokenize \"{}\"", expr)
 	}

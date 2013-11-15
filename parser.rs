@@ -1,11 +1,10 @@
-use token::{ Token, Add, Sub, Mul, Div, Number };
+use token::{ Token, Number };
 use std::fmt;
 
 pub struct Node {
 	token: Token,
 	left: Option<~Node>,
-	right: Option<~Node>,
-	index: uint
+	right: Option<~Node>
 }
 
 impl fmt::Default for Node {
@@ -18,76 +17,40 @@ impl fmt::Default for Node {
 			Some(ref x) => format!("{}", **x),
 			None => ~"None"
 		};
-		write!(f.buf, "Node : T({}), L({}), R({}), I({})", obj.token, left, right, obj.index)
+		write!(f.buf, "Node : T({}), L[{}], R({})", obj.token, left, right)
 	}
 }
 
-fn precedence(token: Token) -> uint {
-	match *token {
-		Add => 1, Sub => 1,
-		Mul => 2, Div => 1,
-		_ => 0
+pub fn parse_expression(mut tokens: ~[Token], mut lhs: Node, min_precedence: uint) -> (Node, ~[Token]) {
+
+	if tokens[0] == lhs.token {
+		tokens.shift();
 	}
-}
-
-fn is_operator(token: Token) -> bool {
-	match *token {
-		Add => true, Sub => true,
-		Mul => true, Div => true,
-		_ => false
-	}
-}
-
-pub fn parse_expression(tokens: &[Token], mut lhs: Node, min_precedence: uint) -> Node {
-
-	debug!("===========================================");
-
-	let mut i = lhs.index;
 	
-	i += 1;
-	debug!("i = {}", i);
-	
-	debug!("while is_operator({}) && precedence({}) >= {}", is_operator(tokens[i]), precedence(tokens[i]), min_precedence);
-	while is_operator(tokens[i]) && precedence(tokens[i]) >= min_precedence {
+	let mut lh = tokens[0];
+
+	while lh.is_operator() && lh.precedence() >= min_precedence {
 		
-		debug!("\toperator = {}", tokens[i]);
-		let operator = tokens[i];
+		let op = tokens.shift();
+		let mut rhs = Node{ token: tokens.shift(), left: None, right: None };
+		lh = tokens[0];
 
-		i += 1;
-		debug!("\ti = {}", i);
-
-		let mut rhs = Node{ token: tokens[i], left: None, right: None, index: i }; 
-		debug!("\t{}", rhs);
-
-		debug!("\tif {} >= {}", i+1, tokens.len());
-		if i+1 >= tokens.len() {
-			lhs =  Node{ token: operator, left: Some(~lhs), right: Some(~rhs), index: i-1 };
-			break
-		}
-
-		debug!("\twhile is_operator({}) && precedence({}) > {}", is_operator(tokens[i+1]), precedence(tokens[i+1]), precedence(operator));
-		while is_operator(tokens[i+1]) && precedence(tokens[i+1]) > precedence(operator) {
-
-			debug!("\t\tif {} >= {}", i+1, tokens.len());
-			if i+1 >= tokens.len() {
-				break
-			}
-			debug!("\t\t{}", rhs);
-			rhs = parse_expression(tokens, rhs, precedence(tokens[i+1]));
-			debug!("\t\t{}", rhs);
-			i = match rhs.right {
-				Some(ref x) => x.index + 1,
-				None => fail!("FAIL; {}", rhs)
+		while lh.is_operator() && lh.precedence() > op.precedence() {
+			
+			rhs = match parse_expression(tokens, rhs, lh.precedence()) {
+				(r, t) => { tokens = t; r }
 			};
-			debug!("\t\ti = {}", i);
+			lh = tokens[0];
+
 		}
 
-		lhs =  Node{ token: operator, left: Some(~lhs), right: Some(~rhs), index: i-1 };
-		debug!("\tlhs = {}", lhs);
-	} 
+		lhs = Node{ token: op, left: Some(~lhs), right: Some(~rhs) };
+		lh = tokens[0];
 
-	debug!("{}", lhs);
-	return lhs;
+	}
+
+	return (lhs, tokens);
+
 }
 
 #[test]
@@ -95,7 +58,9 @@ fn test_parse_expression() {
 	
 	use token::tokenizer;
 
-	let expr = "3+4*7+6"; 
-	parse_expression(tokenizer(expr), Node{ token: Token(Number(3f64)), left: None, right: None, index: 0}, 0);
+	let expr = "3+4*7*7+6+3"; 
+	match parse_expression(tokenizer(expr), Node{ token: Token(Number(3f64)), left: None, right: None }, 0) {
+		(n, _) => debug!("{}", n)	
+	}
 
 }
