@@ -1,5 +1,6 @@
 use std::char::is_digit;
 use std::from_str::from_str;
+use std::fmt;
 
 #[deriving(Eq)]
 pub struct Token(Tokens);
@@ -11,6 +12,20 @@ pub enum Tokens {
 	OpenParentheses,
 	CloseParentheses,
 	Unknown(char)
+}
+
+impl fmt::Default for Token {
+	fn fmt(obj: &Token, f: &mut fmt::Formatter) {
+		let txt = match **obj {
+			Add => ~"+", Sub => ~"-", Mul => ~"*", Div => ~"/",
+			Number(x) => format!("{}", x),
+			OpenParentheses => ~"(",
+			CloseParentheses => ~")",
+			Unknown(x) => format!("{}", x)
+		};
+
+		write!(f.buf, "{}", txt)
+	}
 }
 
 pub fn tokenizer(text: &str) -> ~[Token] {
