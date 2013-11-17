@@ -1,4 +1,4 @@
-use token::{ Token, Number };
+use token::{ Token };
 use std::fmt;
 
 pub struct Node {
@@ -56,10 +56,12 @@ pub fn parse_expression(mut tokens: ~[Token], mut lhs: Node, min_precedence: uin
 #[test]
 fn test_parse_expression() {
 	
-	use token::tokenizer;
+	use lexer::Lexer;
+	use token::Number;
 
-	let expr = "3+4*7*7+6+3"; 
-	match parse_expression(tokenizer(expr), Node{ token: Token(Number(3f64)), left: None, right: None }, 0) {
+	let lexer = Lexer::new(~"3+4*7*7+6+3");
+
+	match parse_expression(lexer.tokens, Node{ token: Token(Number(3f64)), left: None, right: None }, 0) {
 		(n, _) => debug!("{}", n)	
 	}
 
