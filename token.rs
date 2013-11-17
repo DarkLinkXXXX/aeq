@@ -2,10 +2,10 @@ use std::char::is_digit;
 use std::from_str::from_str;
 use std::fmt;
 
-#[deriving(Eq, Clone)]
+#[deriving(Eq)]
 pub struct Token(Tokens);
 
-#[deriving(Eq, Clone)]
+#[deriving(Eq)]
 pub enum Tokens {
 	Add, Sub, Mul, Div,
 	Number(f64),
