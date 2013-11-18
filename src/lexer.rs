@@ -30,7 +30,7 @@ impl Lexer {
 				')' => { Token(CloseParentheses) }
 
 				d if is_digit(d) => {
-					match token_number(d, next, self.text) {
+					match self.token_number(d, next) {
 						Some(t) => { t }
 						None    => {
 							warn!("warning: token.rs in tokenizer: couldn't match token_number!");
@@ -52,42 +52,41 @@ impl Lexer {
 
 	}
 
-}
+	fn token_number(&self, ch: char, next: &mut uint) -> Option<Token> {
 
-fn token_number(ch: char, next: &mut uint, text: &str) -> Option<Token> {
+		let mut number = ~"";
 
-	let mut number = ~"";
+		// push the first given character ch e.g. 7.88 -> '7' would be ch
+		// into our number string
+		number.push_char(ch);
 
-	// push the first given character ch e.g. 7.88 -> '7' would be ch
-	// into our number string
-	number.push_char(ch);
+		// Iterate through the text until we hit the end of the number.
+		// So we pushed every character of the number into the number string.
+		loop {
+			if *next >= self.text.len() {
+				break
+			}
 
-	// Iterate through the text until we hit the end of the number.
-	// So we pushed every character of the number into the number string.
-	loop {
-		if *next >= text.len() {
-			break
+			let ch = self.text.char_range_at(*next).ch;
+
+			if is_digit(ch) || ch == '.' {
+				number.push_char(ch)
+			} else {
+				break
+			}
+
+			*next = self.text.char_range_at(*next).next;
 		}
 
-		let ch = text.char_range_at(*next).ch;
+		// convert the number string into a real number
+		let n = match from_str::<f64>(number) {
+			Some(n) => n,
+			None    => {
+				warn!("warning: token.rs in token_number: couldn't convert {} into a floating point number!", number);
+				return None
+			}
+		};
 
-		if is_digit(ch) || ch == '.' {
-			number.push_char(ch)
-		} else {
-			break
-		}
-
-		*next = text.char_range_at(*next).next;
+		return Some(Token(Number(n)));
 	}
-
-	// convert the number string into a real number
-	let n = match from_str::<f64>(number) {
-		Some(n) => n,
-		None    => {
-			warn!("warning: token.rs in token_number: couldn't convert {} into a floating point number!", number);
-			return None
-		}
-	};
-
-	return Some(Token(Number(n)));
 }
