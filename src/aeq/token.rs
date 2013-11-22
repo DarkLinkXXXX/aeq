@@ -1,10 +1,5 @@
 use std::fmt;
 
-pub struct Lexer {
-	tokens: ~[Token],
-	text: ~str
-}
-
 #[deriving(Eq)]
 pub struct Token(Tokens);
 
@@ -38,7 +33,7 @@ impl Token {
 	pub fn precedence(&self) -> uint {
 		match **self {
 			Add => 1, Sub => 1,
-			Mul => 2, Div => 1,
+			Mul => 2, Div => 2,
 			_ => 0
 		}
 	}

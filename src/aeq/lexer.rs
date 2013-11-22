@@ -1,7 +1,9 @@
 use token:: { Token, Add, Sub, Mul, Div, Number, OpenParentheses, CloseParentheses, EOF, Unknown, iter };
 use std::char::is_digit;
 use std::from_str::from_str;
-
+ 
+// Struct for saving all Tokens and the plain text.
+// Plain text can be useful for providing nice error messages.
 pub struct Lexer {
 	tokens: ~[Token],
 	text: ~str
@@ -9,6 +11,7 @@ pub struct Lexer {
 
 impl Lexer {
 
+	// Method to create a Lexer
 	pub fn new(text: ~str) -> Lexer {
 		let mut lexer = Lexer{tokens: ~[], text: text};
 		lexer.analyse();
@@ -21,38 +24,36 @@ impl Lexer {
 		//  Check if the character is a token or could indicate some token.
 		do iter(self.text) |ch, next| {
 
-			let token = match ch {
-				'+' => { Token(Add) }
-				'-' => { Token(Sub) }
-				'*' => { Token(Mul) }
-				'/' => { Token(Div) }
-				'(' => { Token(OpenParentheses) }
-				')' => { Token(CloseParentheses) }
-
-				d if is_digit(d) => {
-					match self.token_number(d, next) {
-						Some(t) => { t }
-						None    => {
-							warn!("warning: token.rs in tokenizer: couldn't match token_number!");
-							Token(Unknown(ch))
-						}
-					}
-				}
-
-				_   => {
-					info!("info: token.rs in tokenizer: {} is a unknown character.", ch);
-					Token(Unknown(ch))
-				}
-			}; 
+			// Filter the token out of the text and push it into the tokens 
+			let token = self.filter_token_out(ch, next); 
 
 			self.tokens.push(token);
 		}
 
-		self.tokens.push(Token(EOF));
+		// Push EOF to tokens what indicates the end
+		self.tokens.push(Token(EOF)) ;
 
 	}
 
-	fn token_number(&self, ch: char, next: &mut uint) -> Option<Token> {
+	fn filter_token_out(&self, ch: char, next: &mut uint) -> Token {
+		match ch {
+			'+' => Token(Add),
+			'-' => Token(Sub),
+			'*' => Token(Mul),
+			'/' => Token(Div),
+			'(' => Token(OpenParentheses),
+			')' => Token(CloseParentheses),
+			d if is_digit(d) => { // if ch eg. is '3' and the number is "3.5"
+				self.filter_number_out(d, next)
+			}
+			_   => { // ch don't indicate a token	
+				warn!("info: token.rs in tokenizer: {} is a unknown character.", ch);
+				Token(Unknown(ch))
+			}
+		} 
+	}
+
+	fn filter_number_out(&self, ch: char, next: &mut uint) -> Token {
 
 		let mut number = ~"";
 
@@ -63,7 +64,7 @@ impl Lexer {
 		// Iterate through the text until we hit the end of the number.
 		// So we pushed every character of the number into the number string.
 		loop {
-			if *next >= self.text.len() {
+			if *next >= self.text.len() { // prevends errors like next is out of range
 				break
 			}
 
@@ -83,10 +84,10 @@ impl Lexer {
 			Some(n) => n,
 			None    => {
 				warn!("warning: token.rs in token_number: couldn't convert {} into a floating point number!", number);
-				return None
+				return Token(Unknown(ch))
 			}
 		};
 
-		return Some(Token(Number(n)));
+		return Token(Number(n));
 	}
 }

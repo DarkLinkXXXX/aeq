@@ -23,20 +23,23 @@ impl fmt::Default for Node {
 
 pub fn parse_expression(mut tokens: ~[Token], mut lhs: Node, min_precedence: uint) -> (Node, ~[Token]) {
 
-	if tokens[0] == lhs.token {
+	// lhs: left-hand-side, rhs: right-hand-side
+
+	if tokens[0] == lhs.token { // lhs is not lookahead(lh)
 		tokens.shift();
 	}
 	
-	let mut lh = tokens[0];
+	let mut lh = tokens[0]; // look at the next token, our lookahead
 
 	while lh.is_operator() && lh.precedence() >= min_precedence {
 		
-		let op = tokens.shift();
-		let mut rhs = Node{ token: tokens.shift(), left: None, right: None };
+		let op = tokens.shift(); // get next token, our operator
+		let mut rhs = Node{ token: tokens.shift(), left: None, right: None }; // get next token, our rhs
 		lh = tokens[0];
 
 		while lh.is_operator() && lh.precedence() > op.precedence() {
 			
+			// recursive invocation of parse_expression 
 			rhs = match parse_expression(tokens, rhs, lh.precedence()) {
 				(r, t) => { tokens = t; r }
 			};
@@ -44,6 +47,7 @@ pub fn parse_expression(mut tokens: ~[Token], mut lhs: Node, min_precedence: uin
 
 		}
 
+		// save our results in the lhs
 		lhs = Node{ token: op, left: Some(~lhs), right: Some(~rhs) };
 		lh = tokens[0];
 
