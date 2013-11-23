@@ -1,37 +1,32 @@
 use token:: { Add, Sub, Mul, Div, Number };
 use parser;
 
+// Implement a interpret method to interpret our parse tree.
 impl parser::Node {
-	pub fn interprete(&self) -> f64{
+
+	pub fn interpret(&self) -> f64{
 
 		let left = match self.left {
-			Some(ref n) => n.interprete(),
+			Some(ref n) => n.interpret(), // recursive invocation.
 			None        => 1f64
 		};
 
 		let right = match self.right {
-			Some(ref n) => n.interprete(),
+			Some(ref n) => n.interpret(), // recursive invocation.
 			None        => 1f64
 		};
 
 		match *self.token {
+
 			Add => left + right,
 			Sub => left - right,
 			Mul => left * right,
 			Div => left / right,
-			Number(n) => n,
-			_   => { error!("[error: interpreter.rs in Node::interprete] -> Unknown Token to interprete."); return 0f64 }
+			Number(n) => n,	
+			_   => { error!("[error: interpreter.rs in Node::interpret] -> Unknown Token to interpret."); return 0f64 }
+
 		}
+
 	}
+
 }	
-
-#[test]
-fn test_interpreter() {
-	use parser::Parser;
-	use lexer::Lexer;
-
-	let lexer = Lexer::new(~"(9+8)*(1+2)");
-	let parser = Parser::new(lexer);
-
-	parser.root.interprete();
-}

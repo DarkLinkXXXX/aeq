@@ -12,34 +12,39 @@ pub struct Lexer {
 
 impl Lexer {
 
-	// Method to create a Lexer
+	// Static method to create a Lexer.
 	pub fn new(text: ~str) -> Lexer {
+
+		// Create a lexer and parse the code.
 		let mut lexer = Lexer{tokens: ~[], text: text};
 		lexer.analyse();
+
 		return lexer;
 	}
 
 	fn analyse(& mut self) {
 
 		//  Iterate through every character in the text.
-		//  Check if the character is a token or could indicate some token.
+		//  Filter the token out and push it to tokens.
 		do iter(self.text) |ch, next| {
 
+			// Ignore white spaces.
 			if !is_whitespace(ch) {
-				// Filter the token out of the text and push it into the tokens 
-				let token = self.filter_token_out(ch, next); 
 
-				debug!("token: {}", token)
+				// Filter the token out of the text and push it into the tokens.
+				let token = self.filter_token_out(ch, next); 
 				self.tokens.push(token);
+
 			}
 		}
 
-		// Push EOF to tokens what indicates the end
+		// Push EOF to tokens what indicates the end.
 		self.tokens.push(Token(EOF)) ;
 
 	}
 
 	fn filter_token_out(&self, ch: char, next: &mut uint) -> Token {
+
 		match ch {
 			'+' => Token(Add),
 			'-' => Token(Sub),
@@ -47,59 +52,55 @@ impl Lexer {
 			'/' => Token(Div),
 			'(' => Token(OpenParentheses),
 			')' => Token(CloseParentheses),
-			d if is_digit(d) => { // if ch eg. is '3' and the number is "3.5"
+			d if is_digit(d) => { // if ch e.g. is '3' then the number could be "3.5".
 				self.filter_number_out(d, next)
 			}
-			_   => { // ch don't indicate a token	
+			_   => { // ch don't indicate a token.
 				error!("[error: lexer.rs in Lexer::filter_token_out] -> {} is a unknown character.", ch);
 				Token(Unknown(ch))
 			}
 		} 
+
 	}
 
 	fn filter_number_out(&self, ch: char, next: &mut uint) -> Token {
 
-		let mut number = ~"";
+		let mut number = ~""; // Temporary string where the number string is stored.
 
-		// push the first given character ch e.g. 7.88 -> '7' would be ch
-		// into our number string
+		// Push the first given character to tokens. 
 		number.push_char(ch);
 
 		// Iterate through the text until we hit the end of the number.
 		// So we pushed every character of the number into the number string.
 		loop {
-			if *next >= self.text.len() { // prevends errors like next is out of range
+			if *next >= self.text.len() { // Prevents errors like index is out of range.
 				break
 			}
 
+			// Get the next character.
 			let ch = self.text.char_range_at(*next).ch;
 
-			if is_digit(ch) || ch == '.' {
+			if is_digit(ch) || ch == '.' { // A number can only contain digits and a decimal point.
 				number.push_char(ch)
-			} else {
+			} else { // We hit the end of the number.
 				break
 			}
 
+			// Set next to the next character.
 			*next = self.text.char_range_at(*next).next;
 		}
 
-		// convert the number string into a real number
+		// Convert the number string into a real number.
 		let n = match from_str::<f64>(number) {
+
 			Some(n) => n,
 			None    => {
 				error!("[error: lexer.rs in Lexer::filter_number_out] -> couldn't convert {} into a floating point number!", number);
 				return Token(Unknown(ch))
 			}
+
 		};
 
 		return Token(Number(n));
 	}
 }
-
-#[test]
-fn test_lexer() {
-	//let lexer = Lexer::new(~"3+3*7");
-	//if lexer.tokens != ~[Token(Number(3f64)), Token(Add), Token(Number(3f64)), Token(Mul), Token(Number(7f64)), Token(EOF)] {
-		//fail!("test \"{}\": lexer::new failed!", lexer.text)
-	//}
-} 
