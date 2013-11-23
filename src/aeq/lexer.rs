@@ -91,3 +91,11 @@ impl Lexer {
 		return Token(Number(n));
 	}
 }
+
+#[test]
+fn test_lexer() {
+	let lexer = Lexer::new(~"3+3*7");
+	if lexer.tokens != ~[Token(Number(3f64)), Token(Add), Token(Number(3f64)), Token(Mul), Token(Number(7f64)), Token(EOF)] {
+		fail!("test \"{}\": lexer::new failed!", lexer.text)
+	}
+} 

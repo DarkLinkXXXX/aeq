@@ -63,4 +63,3 @@ pub fn iter(text: &str, op: &fn(c: char, next: &mut uint)) {
 		n = next
 	}
 }
-
