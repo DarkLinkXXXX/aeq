@@ -1,5 +1,6 @@
 use token:: { Token, Add, Sub, Mul, Div, Number, OpenParentheses, CloseParentheses, EOF, Unknown, iter };
 use std::char::is_digit;
+use std::char::is_whitespace;
 use std::from_str::from_str;
  
 // Struct for saving all Tokens and the plain text.
@@ -24,11 +25,13 @@ impl Lexer {
 		//  Check if the character is a token or could indicate some token.
 		do iter(self.text) |ch, next| {
 
-			// Filter the token out of the text and push it into the tokens 
-			let token = self.filter_token_out(ch, next); 
+			if !is_whitespace(ch) {
+				// Filter the token out of the text and push it into the tokens 
+				let token = self.filter_token_out(ch, next); 
 
-			debug!("token: {}", token)
-			self.tokens.push(token);
+				debug!("token: {}", token)
+				self.tokens.push(token);
+			}
 		}
 
 		// Push EOF to tokens what indicates the end
@@ -48,7 +51,7 @@ impl Lexer {
 				self.filter_number_out(d, next)
 			}
 			_   => { // ch don't indicate a token	
-				warn!("info: token.rs in tokenizer: {} is a unknown character.", ch);
+				error!("[error: lexer.rs in Lexer::filter_token_out] -> {} is a unknown character.", ch);
 				Token(Unknown(ch))
 			}
 		} 
@@ -84,7 +87,7 @@ impl Lexer {
 		let n = match from_str::<f64>(number) {
 			Some(n) => n,
 			None    => {
-				warn!("warning: token.rs in token_number: couldn't convert {} into a floating point number!", number);
+				error!("[error: lexer.rs in Lexer::filter_number_out] -> couldn't convert {} into a floating point number!", number);
 				return Token(Unknown(ch))
 			}
 		};

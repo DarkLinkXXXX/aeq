@@ -1,4 +1,4 @@
-use token::{ Token, EOF, OpenParentheses, CloseParentheses, Number };
+use token::{ Token, EOF, OpenParentheses, Number };
 use lexer::Lexer;
 use std::fmt;
 
@@ -49,8 +49,12 @@ impl Parser {
 				self.tokens.shift();
 				node
 			} 
-			Number(n)	=> { self.tokens.shift(); lhs }
-			_		=> { error!("Unexpected token: {}", lhs.token); self.tokens.shift(); lhs }
+			Number(_)	=> { self.tokens.shift(); lhs }
+			_		=> { 
+				error!("[error: parser.rs in Parser::parse_operand] -> Unexpected token: {}", lhs.token);
+				self.tokens.shift(); 
+				lhs 
+			}
 		}
 
 	}

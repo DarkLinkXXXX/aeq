@@ -20,7 +20,7 @@ impl parser::Node {
 			Mul => left * right,
 			Div => left / right,
 			Number(n) => n,
-			_   => { error!("Unknown Token to interprete."); return 0f64 }
+			_   => { error!("[error: interpreter.rs in Node::interprete] -> Unknown Token to interprete."); return 0f64 }
 		}
 	}
 }	
