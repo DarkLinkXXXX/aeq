@@ -30,8 +30,8 @@ fn test_interpreter() {
 	use parser::Parser;
 	use lexer::Lexer;
 
-	let lexer = Lexer::new(~"22/7");
+	let lexer = Lexer::new(~"(9+8)*(1+2)");
 	let parser = Parser::new(lexer);
 
-	debug!("{}", parser.root.interprete());
+	parser.root.interprete();
 }
