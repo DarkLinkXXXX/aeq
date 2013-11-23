@@ -27,13 +27,11 @@ impl parser::Node {
 
 #[test]
 fn test_interpreter() {
-	use parser::parse_expression;
+	use parser::Parser;
 	use lexer::Lexer;
-	use token::Token;
 
 	let lexer = Lexer::new(~"22/7");
-	let tokens = lexer.tokens.clone();
-	match parse_expression(lexer.tokens, parser::Node{ token: tokens[0], left: None, right: None }, 0) {
-		(n, _) => println!("{}", n.interprete())
-	}
+	let parser = Parser::new(lexer);
+
+	debug!("{}", parser.root.interprete());
 }
