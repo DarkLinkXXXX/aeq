@@ -1,9 +1,9 @@
 use std::fmt;
 
-#[deriving(Eq)]
+#[deriving(Eq, Clone)]
 pub struct Token(Tokens);
 
-#[deriving(Eq)]
+#[deriving(Eq, Clone)]
 pub enum Tokens {
 	Add, Sub, Mul, Div,
 	Number(f64),
@@ -45,9 +45,8 @@ impl Token {
 			_ => false
 		}
 	}
+
 }
-
-
 
 pub fn iter(text: &str, op: &fn(c: char, next: &mut uint)) {
 
