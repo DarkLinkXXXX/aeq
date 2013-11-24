@@ -3,6 +3,7 @@ use lexer::Lexer;
 use std::fmt;
 
 // Struct to build a parse tree.
+#[deriving(Eq, Clone)]
 pub struct Node {
 	token: Token,
 	left: Option<~Node>,
@@ -62,7 +63,7 @@ impl Parser {
 			OpenParentheses => {
 
 				self.tokens.shift();	// eat '('.
-				lhs.token =  self.tokens[0];	// (a+b) lhs.tokens = a.
+				lhs.token =  self.tokens[0].clone();	// (a+b) lhs.tokens = a.
 
 				// parse the hole expression.
 				let node = self.parse_expression(lhs, min_precedence);
@@ -93,28 +94,28 @@ impl Parser {
 			self.tokens.shift();
 		}
 		
-		let mut lh = self.tokens[0]; // look at the next token, our lookahead.
+		let mut lh = self.tokens[0].clone(); // look at the next token, our lookahead.
 
 		while lh.is_operator() && lh.precedence() >= min_precedence {
 			
 			let op = self.tokens.shift(); // get next token, our operator.
 
-			let mut rhs = Node{ token: self.tokens[0], left: None, right: None }; // get next token, our rhs.
+			let mut rhs = Node{ token: self.tokens[0].clone(), left: None, right: None }; // get next token, our rhs.
 			rhs = self.parse_operand(rhs, 0); // if rhs is a expression in brackets then parse it e.g. 3+(3+3).
 
-			lh = self.tokens[0];
+			lh = self.tokens[0].clone();
 
 			while lh.is_operator() && lh.precedence() > op.precedence() {
 				
 				// recursive invocation of parse_expression.
 				rhs = self.parse_expression(rhs, lh.precedence());
-				lh = self.tokens[0];
+				lh = self.tokens[0].clone();
 
 			}
 
 			// save our results in the lhs
 			lhs = Node{ token: op, left: Some(~lhs), right: Some(~rhs) };
-			lh = self.tokens[0];
+			lh = self.tokens[0].clone();
 
 		}
 

@@ -1,6 +1,5 @@
-use token:: { Token, Add, Sub, Mul, Div, Number, OpenParentheses, CloseParentheses, EOF, Unknown, iter };
-use std::char::is_digit;
-use std::char::is_whitespace;
+use token:: { Token, Add, Sub, Mul, Div, Number, OpenParentheses, CloseParentheses, EOF, Unknown, iter, Identifier, Assign };
+use std::char::{ is_digit, is_whitespace, is_alphabetic };
 use std::from_str::from_str;
  
 // Struct for saving all Tokens and the plain text.
@@ -52,8 +51,12 @@ impl Lexer {
 			'/' => Token(Div),
 			'(' => Token(OpenParentheses),
 			')' => Token(CloseParentheses),
+			'=' => Token(Assign),
 			d if is_digit(d) => { // if ch e.g. is '3' then the number could be "3.5".
 				self.filter_number_out(d, next)
+			}
+			a if is_alphabetic(a)   => { // if ch is 'a' or 'x' it indicates a identifier.
+				self.filter_identifier_out(a, next)	
 			}
 			_   => { // ch don't indicate a token.
 				error!("[error: lexer.rs in Lexer::filter_token_out] -> {} is a unknown character.", ch);
@@ -63,11 +66,41 @@ impl Lexer {
 
 	}
 
+	fn filter_identifier_out(&self, ch: char, next: &mut uint) -> Token {
+		
+		let mut identifier = ~""; // Temporary string where the identifier is stored.
+
+		// Push the first given character to our temporary identifier string.
+		identifier.push_char(ch);
+
+		// Iterate through the text until we hit the end of the identifier.
+		// So we pushed every character of the identifier into the identifier string.
+		loop {
+			if *next >= self.text.len() { // Prevents errors like index is out of range.
+				break
+			}
+
+			// Get the next character.
+			let ch = self.text.char_range_at(*next).ch;
+
+			if is_alphabetic(ch) { // An identifier only contains alphabetic characters.
+				identifier.push_char(ch)
+			} else { // We hit the end of the identifier.
+				break
+			}
+
+			// Set next to the next character.
+			*next = self.text.char_range_at(*next).next;
+		}
+
+		return Token(Identifier(identifier))
+	}
+
 	fn filter_number_out(&self, ch: char, next: &mut uint) -> Token {
 
 		let mut number = ~""; // Temporary string where the number string is stored.
 
-		// Push the first given character to tokens. 
+		// Push the first given character to our temporary number string.
 		number.push_char(ch);
 
 		// Iterate through the text until we hit the end of the number.

@@ -8,9 +8,11 @@ pub struct Token(Tokens);
 #[deriving(Eq, Clone)]
 pub enum Tokens {
 	Add, Sub, Mul, Div,
+	Assign,
 	Number(f64),
 	OpenParentheses,
 	CloseParentheses,
+	Identifier(~str),
 	EOF,
 	Unknown(char)
 }
@@ -22,9 +24,11 @@ impl fmt::Default for Token {
 
 		let txt = match **obj {
 			Add => ~"+", Sub => ~"-", Mul => ~"*", Div => ~"/",
+			Assign => ~"=",
 			Number(x) => format!("{}", x),
 			OpenParentheses => ~"(",
 			CloseParentheses => ~")",
+			Identifier(ref x) => x.clone(),
 			EOF => ~"EOF",
 			Unknown(x) => format!("{}", x)
 		};
@@ -40,8 +44,9 @@ impl Token {
 	pub fn precedence(&self) -> uint {
 
 		match **self {
-			Add => 1, Sub => 1,
-			Mul => 2, Div => 2,
+			Add => 2, Sub => 2,
+			Mul => 3, Div => 3,
+			Assign => 1,
 			_ => 0
 		}
 
@@ -53,6 +58,7 @@ impl Token {
 		match **self {
 			Add => true, Sub => true,
 			Mul => true, Div => true,
+			Assign => true,
 			_ => false
 		}
 
