@@ -14,7 +14,7 @@ fn main() {
 
 	let lexer = lexer::Lexer::new(args()[1]);
 	let parser = parser::Parser::new(lexer);
-	println!("{} = {}", args()[1], parser.root.interprete());
+	println!("{} = {}", args()[1], parser.root.interpret());
 }
 
 
