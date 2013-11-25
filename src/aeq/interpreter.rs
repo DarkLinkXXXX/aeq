@@ -52,9 +52,19 @@ impl SymbolTable {
 impl parser::Node {
 
 	pub fn interpret(&self, symboltable: &mut SymbolTable) -> f64{
-
+		
 		let left = match self.left {
-			Some(ref n) => n.interpret(symboltable), // recursive invocation.
+			Some(ref n) => {
+					match *self.token {
+						Assign => {
+							match *n.token {
+								Identifier(_) => 1f64,
+								_ => n.interpret(symboltable) // recursive invocation.
+							}
+						}
+						_ => n.interpret(symboltable) // recursive invocation.
+					}
+				}
 			None        => 1f64
 		};
 

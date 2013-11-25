@@ -1,4 +1,4 @@
-use token::{ Token, EOF, OpenParentheses, Number };
+use token::{ Token, EOF, OpenParentheses, Number, Identifier };
 use lexer::Lexer;
 use std::fmt;
 
@@ -75,6 +75,11 @@ impl Parser {
 			Number(_)	=> { 
 				self.tokens.shift(); // eat lhs.
 				return lhs 
+			}
+			
+			Identifier(_)   => {
+				self.tokens.shift(); // eat lhs.
+				return lhs;
 			}
 
 			_		=> { 
