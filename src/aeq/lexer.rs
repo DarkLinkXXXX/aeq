@@ -1,4 +1,4 @@
-use token:: { Token, Add, Sub, Mul, Div, Number, OpenParentheses, CloseParentheses, EOF, Unknown, iter, Identifier, Assign };
+use token:: { Token, Add, Sub, Mul, Div, Number, OpenParentheses, CloseParentheses, EOF, Unknown, Identifier, Assign };
 use std::char::{ is_digit, is_whitespace, is_alphabetic };
 use std::from_str::from_str;
  
@@ -21,17 +21,19 @@ impl Lexer {
 		return lexer;
 	}
 
-	fn analyse(& mut self) {
+	fn analyse(&mut self) {
 
 		//  Iterate through every character in the text.
 		//  Filter the token out and push it to tokens.
-		do iter(self.text) |ch, next| {
+		while self.text.len() >= 1 {
 
+			let ch = self.text.shift_char();
+			
 			// Ignore white spaces.
 			if !is_whitespace(ch) {
 
 				// Filter the token out of the text and push it into the tokens.
-				let token = self.filter_token_out(ch, next); 
+				let token = self.filter_token_out(ch); 
 				self.tokens.push(token);
 
 			}
@@ -42,7 +44,7 @@ impl Lexer {
 
 	}
 
-	fn filter_token_out(&self, ch: char, next: &mut uint) -> Token {
+	fn filter_token_out(&mut self, ch: char) -> Token {
 
 		match ch {
 			'+' => Token(Add),
@@ -53,10 +55,10 @@ impl Lexer {
 			')' => Token(CloseParentheses),
 			'=' => Token(Assign),
 			d if is_digit(d) => { // if ch e.g. is '3' then the number could be "3.5".
-				self.filter_number_out(d, next)
+				self.filter_number_out(d)
 			}
 			a if is_alphabetic(a)   => { // if ch is 'a' or 'x' it indicates a identifier.
-				self.filter_identifier_out(a, next)	
+				self.filter_identifier_out(a)	
 			}
 			_   => { // ch don't indicate a token.
 				error!("[error: lexer.rs in Lexer::filter_token_out] -> {} is a unknown character.", ch);
@@ -66,7 +68,7 @@ impl Lexer {
 
 	}
 
-	fn filter_identifier_out(&self, ch: char, next: &mut uint) -> Token {
+	fn filter_identifier_out(&mut self, ch: char) -> Token {
 		
 		let mut identifier = ~""; // Temporary string where the identifier is stored.
 
@@ -76,12 +78,12 @@ impl Lexer {
 		// Iterate through the text until we hit the end of the identifier.
 		// So we pushed every character of the identifier into the identifier string.
 		loop {
-			if *next >= self.text.len() { // Prevents errors like index is out of range.
+			if self.text.len() < 1 { // Prevents errors like index is out of range.
 				break
 			}
 
 			// Get the next character.
-			let ch = self.text.char_range_at(*next).ch;
+			let ch = self.text.char_at(0);
 
 			if is_alphabetic(ch) { // An identifier only contains alphabetic characters.
 				identifier.push_char(ch)
@@ -89,14 +91,14 @@ impl Lexer {
 				break
 			}
 
-			// Set next to the next character.
-			*next = self.text.char_range_at(*next).next;
+			self.text.shift_char();
+
 		}
 
 		return Token(Identifier(identifier))
 	}
 
-	fn filter_number_out(&self, ch: char, next: &mut uint) -> Token {
+	fn filter_number_out(&mut self, ch: char) -> Token {
 
 		let mut number = ~""; // Temporary string where the number string is stored.
 
@@ -106,12 +108,12 @@ impl Lexer {
 		// Iterate through the text until we hit the end of the number.
 		// So we pushed every character of the number into the number string.
 		loop {
-			if *next >= self.text.len() { // Prevents errors like index is out of range.
+			if self.text.len() < 1 { // Prevents errors like index is out of range.
 				break
 			}
 
 			// Get the next character.
-			let ch = self.text.char_range_at(*next).ch;
+			let ch = self.text.char_at(0);
 
 			if is_digit(ch) || ch == '.' { // A number can only contain digits and a decimal point.
 				number.push_char(ch)
@@ -119,17 +121,16 @@ impl Lexer {
 				break
 			}
 
-			// Set next to the next character.
-			*next = self.text.char_range_at(*next).next;
+			self.text.shift_char();
+
 		}
 
 		// Convert the number string into a real number.
 		let n = match from_str::<f64>(number) {
-
 			Some(n) => n,
 			None    => {
 				error!("[error: lexer.rs in Lexer::filter_number_out] -> couldn't convert {} into a floating point number!", number);
-				return Token(Unknown(ch))
+				return Token(Unknown('X'))
 			}
 
 		};

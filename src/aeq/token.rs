@@ -65,19 +65,3 @@ impl Token {
 	}
 
 }
-
-// Method used by the Lexer in lexer.rs for iterating through the text.
-pub fn iter(text: &str, op: proc(c: char, next: &mut uint)) {
-
-	let mut n = 0u;
-
-	// Iterate through every character of the text an issue
-	// the given closure on it.
-	while n < text.len() {
-		let ch = text.char_range_at(n).ch;
-		let mut next = text.char_range_at(n).next;
-
-		op(ch, &mut next);
-		n = next
-	}
-}

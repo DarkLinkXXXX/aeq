@@ -50,6 +50,7 @@ impl Parser {
 
 		// Parse our expression and save the root node
 		parser.root = ~parser.parse_expression(lhs, 0);
+		println!("{}", *parser.root);
 
 		return parser;
 
