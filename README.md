@@ -1,8 +1,6 @@
 The aeq Programming Language
 ============================
 
-***
-
 What is aeq ?
 -------------
 
@@ -37,13 +35,6 @@ __I want to make aeq an interactive *playground* for mathematicians.__
 
 * Math functions like: _f(x) = x*x_.
 * Interactive function plotter.
-
-I want to know more about aeq !
--------------------------------
-
-Take a look at the source code at [github](https://github.com/aeqwa/aeq)!
-
-***
 
 Remember
 ========
