@@ -67,7 +67,7 @@ impl Token {
 }
 
 // Method used by the Lexer in lexer.rs for iterating through the text.
-pub fn iter(text: &str, op: &fn(c: char, next: &mut uint)) {
+pub fn iter(text: &str, op: proc(c: char, next: &mut uint)) {
 
 	let mut n = 0u;
 

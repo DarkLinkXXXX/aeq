@@ -22,13 +22,14 @@ fn read_until(c: u8, include: bool) -> ~str {
 
 fn main() {
 
+	// Create a symbol table where all variables are stored and can be accessed.
 	let mut symboltable = interpreter::SymbolTable{ variables: ~[] };
 
 	loop {
-		let text = read_until('\n' as u8, false);
-		let lexer = lexer::Lexer::new(text.clone());
-		let parser = parser::Parser::new(lexer);
-		println!("{} = {}", text, parser.root.interpret(&mut symboltable));
+		let text = read_until('\n' as u8, false); // Read the input of the user.
+		let lexer = lexer::Lexer::new(text); // Lexical analyse.
+		let parser = parser::Parser::new(lexer); // Syntactical analyse.
+		println!("{}", parser.root.interpret(&mut symboltable)); // Interpret the code and output the result.
 	}
 }
 
