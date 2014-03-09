@@ -4,16 +4,16 @@ The aeq Programming Language
 What is aeq ?
 -------------
 
-aeq is a simple interactive and interpreted language.
+aeq is a simple, interactive, and interpreted language.
 
-aeq have one language feature, variables!
+aeq has one language feature: variables!
 
-In aeq there is one type a 64-bit float.
+In aeq there is one type: a 64-bit float.
 
-How it looks and feels ?
+How does it look and feel?
 ------------------------
 
-aeq only works with number, it is more an interactive calculator then a language.
+aeq only works with numbers. It is more of an interactive calculator then a language.
 
 > x = 5 * 3.5
 > 
@@ -21,14 +21,14 @@ aeq only works with number, it is more an interactive calculator then a language
 > 
 > y = z*(x+1/5000)
 
-What technology aeq uses ?
+What technology does aeq use?
 --------------------------
 
 aeq is written in the [Rust Programming Language](http://www.rust-lang.org/).
 
 Thanks to Mozilla and the Rust Community for such a nice language.
 
-What plans I have for the future ?
+What plans have I for the future ?
 ----------------------------------
 
 __I want to make aeq an interactive *playground* for mathematicians.__
@@ -39,6 +39,6 @@ __I want to make aeq an interactive *playground* for mathematicians.__
 Remember
 ========
 
-As a 18 years old student in Germany I cant work full time on it!
+As an 18 year old student in Germany, I can not work full time on it!
 
-Its a fun project, no more, no less. 
+Its a fun project. No more, no less. 
